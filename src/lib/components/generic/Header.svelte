@@ -9,7 +9,7 @@
 	let titleDrawer = 'menu';
 	const coreLinks = [
 		{ href: resolve('/'), label: 'home', target: '_self' },
-		{ href: resolve('/playground'), label: 'playground', target: '_self' }
+		{ href: resolve('/tools/api-client'), label: 'tools', target: '_self' }
 	];
 </script>
 
@@ -24,7 +24,7 @@
 			<!-- Mobile Nav Drawer -->
 			<Drawer title={titleDrawer} navigation={coreLinks} />
 			<!-- Logo -->
-			<a class="hidden xl:inline-block" href={resolve('/')} title="SvelteKit Skeleton Starter">
+			<a class="hidden xl:inline-block" href={resolve('/')} title="MistaTools">
 				<Logo width="32" height="32" />
 			</a>
 			<div class="hidden items-center xl:flex">
@@ -47,7 +47,7 @@
 			<span class="border-r border-surface-200-800"></span>
 			<!-- Social -->
 			<nav class="flex items-center gap-1">
-				<a class="btn-icon hover:preset-tonal" href="https://github.com/mistahuman" rel="external">
+				<a class="btn-icon hover:preset-tonal" href="https://github.com/mistahuman/mistatools" rel="external">
 					<GitHubIcon size={20} />
 				</a>
 			</nav>

@@ -8,7 +8,8 @@
 	const toolLinks = [
 		{ href: resolve('/tools/api-client'), label: 'API Client' },
 		{ href: resolve('/tools/formatter'), label: 'Formatter' },
-		{ href: resolve('/tools/differ'), label: 'Differ' }
+		{ href: resolve('/tools/differ'), label: 'Differ' },
+		{ href: resolve('/tools/editor'), label: 'Editor' }
 	];
 
 	function isActive(href: string): boolean {

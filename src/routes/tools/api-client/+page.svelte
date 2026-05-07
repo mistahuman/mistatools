@@ -33,6 +33,7 @@
 	let responseJson = $state<unknown>(null);
 	let errorMessage = $state('');
 	let responseView = $state<'pretty' | 'raw'>('pretty');
+	let responseContentType = $state('');
 	let copied = $state(false);
 
 	let filledParamCount = $derived(params.filter((p) => p.key.trim()).length);
@@ -61,6 +62,7 @@
 		responseStatus = null;
 		responseText = '';
 		responseJson = null;
+		responseContentType = '';
 		errorMessage = '';
 		responseView = 'pretty';
 
@@ -70,6 +72,7 @@
 
 			const res = await fetch(finalUrl, fetchOptions);
 			responseStatus = res.status;
+			responseContentType = res.headers.get('content-type') ?? '';
 			const text = await res.text();
 			responseText = text;
 
@@ -99,13 +102,28 @@
 
 			if (parsedJson !== null) {
 				responseJson = parsedJson;
-				status = 'success';
+				responseView = 'pretty';
 			} else {
-				errorMessage = 'Response is not valid JSON.';
-				status = 'error';
+				responseView = 'raw';
 			}
+			status = 'success';
 		} catch (err) {
-			errorMessage = err instanceof Error ? err.message : String(err);
+			const msg = err instanceof Error ? err.message : String(err);
+			const isNetworkError =
+				msg.toLowerCase().includes('failed to fetch') ||
+				msg.toLowerCase().includes('networkerror');
+
+			if (isNetworkError) {
+				try {
+					await fetch(finalUrl, { mode: 'no-cors', signal: AbortSignal.timeout(3000) });
+					errorMessage =
+						'CORS error — server is reachable but blocked the request. Add Access-Control-Allow-Origin headers to your backend.';
+				} catch {
+					errorMessage = 'Server unreachable — check that it is running and the URL is correct.';
+				}
+			} else {
+				errorMessage = msg;
+			}
 			status = 'error';
 		}
 	}
@@ -306,10 +324,10 @@
 						{#if responseText}
 							<pre class="overflow-x-auto whitespace-pre-wrap break-all text-xs">{responseText}</pre>
 						{/if}
-						{#if errorMessage.includes('Failed to fetch') || errorMessage.toLowerCase().includes('cors')}
-							<p class="border-l-2 border-surface-200-800 pl-3 text-xs text-surface-400-600">
-								Tip: This may be a CORS restriction. A server-side proxy (<code>+server.ts</code>) can
-								bypass it — see the architecture docs.
+						{#if errorMessage.toLowerCase().includes('cors') || errorMessage.includes('Could not reach')}
+							<p class="border-l-2 border-warning-500 pl-3 text-xs text-surface-400-600">
+								If calling a local server: add <code>Access-Control-Allow-Origin: *</code> to your backend,
+								or use the dev proxy (<code>/proxy?url=…</code>) in development.
 							</p>
 						{/if}
 					</div>
@@ -320,13 +338,18 @@
 								{#if responseStatus}
 									<span class={statusBadgeClass(responseStatus)}>{responseStatus}</span>
 								{/if}
+								{#if responseContentType}
+									<span class="badge preset-tonal text-xs">{responseContentType.split(';')[0].trim()}</span>
+								{/if}
 								<div class="flex gap-1">
-									<button
-										onclick={() => (responseView = 'pretty')}
-										class="btn btn-sm {responseView === 'pretty'
-											? 'preset-tonal-primary'
-											: 'hover:preset-tonal'}"
-									>Pretty</button>
+									{#if responseJson !== null}
+										<button
+											onclick={() => (responseView = 'pretty')}
+											class="btn btn-sm {responseView === 'pretty'
+												? 'preset-tonal-primary'
+												: 'hover:preset-tonal'}"
+										>Pretty</button>
+									{/if}
 									<button
 										onclick={() => (responseView = 'raw')}
 										class="btn btn-sm {responseView === 'raw'

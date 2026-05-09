@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { fade, slide } from 'svelte/transition';
 	import { pipeline } from '$lib/stores/pipeline.svelte';
+	import CodePanel from '$lib/components/editor/CodePanel.svelte';
 
 	type KVPair = { key: string; value: string };
 	type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -40,6 +41,11 @@
 	let filledHeaderCount = $derived(headers.filter((h) => h.key.trim()).length);
 	let hasBody = $derived(METHODS_WITH_BODY.has(method));
 	let canSend = $derived(url.trim().length > 0 && status !== 'loading');
+
+	let responseValue = $derived(
+		responseView === 'pretty' ? JSON.stringify(responseJson, null, 2) : responseText
+	);
+	let responseLanguage = $derived(responseView === 'pretty' ? 'json' : 'plaintext');
 
 	function buildUrl(): string {
 		const filled = params.filter((p) => p.key.trim());
@@ -83,7 +89,6 @@
 				/* not JSON */
 			}
 
-			// Store in pipeline regardless of JSON validity so Formatter/Differ can use raw body too
 			pipeline.lastResponse = {
 				url: finalUrl,
 				method,
@@ -289,14 +294,7 @@
 				{/each}
 				<button onclick={addHeader} class="btn btn-sm preset-tonal">+ Add header</button>
 			{:else if activeTab === 'body'}
-				<textarea
-					bind:value={bodyText}
-					placeholder="Request body (raw text or JSON)…"
-					rows="8"
-					spellcheck="false"
-					class="w-full resize-y rounded border border-surface-200-800 bg-surface-50-950 p-3 font-mono text-sm
-					       focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-500"
-				></textarea>
+				<CodePanel bind:value={bodyText} language="json" height="160px" />
 			{/if}
 		</div>
 	</div>
@@ -326,8 +324,8 @@
 						{/if}
 						{#if errorMessage.toLowerCase().includes('cors') || errorMessage.includes('Could not reach')}
 							<p class="border-l-2 border-warning-500 pl-3 text-xs text-surface-400-600">
-								If calling a local server: add <code>Access-Control-Allow-Origin: *</code> to your backend,
-								or use the dev proxy (<code>/proxy?url=…</code>) in development.
+								If calling a local server: add <code>Access-Control-Allow-Origin: *</code> to your
+								backend, or use the dev proxy (<code>/proxy?url=…</code>) in development.
 							</p>
 						{/if}
 					</div>
@@ -339,7 +337,9 @@
 									<span class={statusBadgeClass(responseStatus)}>{responseStatus}</span>
 								{/if}
 								{#if responseContentType}
-									<span class="badge preset-tonal text-xs">{responseContentType.split(';')[0].trim()}</span>
+									<span class="badge preset-tonal text-xs"
+										>{responseContentType.split(';')[0].trim()}</span
+									>
 								{/if}
 								<div class="flex gap-1">
 									{#if responseJson !== null}
@@ -363,15 +363,7 @@
 							</button>
 						</div>
 
-						{#if responseView === 'pretty'}
-							<pre
-								class="max-h-[50vh] overflow-x-auto whitespace-pre-wrap break-all text-xs"
-							>{JSON.stringify(responseJson, null, 2)}</pre>
-						{:else}
-							<pre
-								class="max-h-[50vh] overflow-x-auto whitespace-pre-wrap break-all text-xs"
-							>{responseText}</pre>
-						{/if}
+						<CodePanel value={responseValue} language={responseLanguage} readonly height="300px" />
 
 						<div class="flex flex-wrap items-center gap-2 border-t border-surface-200-800 pt-3">
 							<span class="text-xs text-surface-500-400">Send to:</span>
@@ -379,9 +371,8 @@
 								onclick={() => goto(resolve('/tools/formatter'))}
 								class="btn btn-sm preset-tonal">Formatter ↗</button
 							>
-							<button
-								onclick={() => goto(resolve('/tools/differ'))}
-								class="btn btn-sm preset-tonal">Differ ↗</button
+							<button onclick={() => goto(resolve('/tools/differ'))} class="btn btn-sm preset-tonal"
+								>Differ ↗</button
 							>
 						</div>
 					</div>

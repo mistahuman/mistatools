@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { pipeline } from '$lib/stores/pipeline.svelte';
 	import { computeDiff, type DiffLine } from '$lib/utils/diff';
+	import CodePanel from '$lib/components/editor/CodePanel.svelte';
 
 	type NumberedLine = DiffLine & { leftN: number | null; rightN: number | null };
 	type SplitRow = {
@@ -88,31 +89,9 @@
 		</p>
 	</div>
 
-	<div class="card preset-filled-surface-100-900 border border-surface-200-800 p-4">
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-			<div class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-surface-500-400">Original</span>
-				<textarea
-					bind:value={left}
-					placeholder="Paste original text here…"
-					rows={isEmpty ? 12 : 6}
-					spellcheck="false"
-					class="w-full resize-y rounded border border-surface-200-800 bg-surface-50-950 p-3 font-mono text-sm
-					       focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-500"
-				></textarea>
-			</div>
-			<div class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-surface-500-400">Modified</span>
-				<textarea
-					bind:value={right}
-					placeholder="Paste modified text here…"
-					rows={isEmpty ? 12 : 6}
-					spellcheck="false"
-					class="w-full resize-y rounded border border-surface-200-800 bg-surface-50-950 p-3 font-mono text-sm
-					       focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-500"
-				></textarea>
-			</div>
-		</div>
+	<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+		<CodePanel bind:value={left} title="Original" height="280px" />
+		<CodePanel bind:value={right} title="Modified" height="280px" />
 	</div>
 
 	<div class="flex gap-1">
@@ -140,7 +119,9 @@
 						{#each numberedLines as line, i (i)}
 							<tr class={flashClass(line.kind)}>
 								<td class="num-col border-r border-surface-200-800 text-right">{line.leftN ?? ''}</td>
-								<td class="num-col border-r border-surface-200-800 text-right">{line.rightN ?? ''}</td>
+								<td class="num-col border-r border-surface-200-800 text-right"
+									>{line.rightN ?? ''}</td
+								>
 								<td class="gutter-col border-r border-surface-200-800 text-center select-none"
 									>{gutter(line.kind)}</td
 								>

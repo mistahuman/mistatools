@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Copy, Check } from 'lucide-svelte';
 	import { pipeline } from '$lib/stores/pipeline.svelte';
 	import { formatText } from '$lib/utils/json';
+	import CodePanel from '$lib/components/editor/CodePanel.svelte';
 	import SmartPreviewer from '$lib/components/tools/SmartPreviewer.svelte';
 
 	let input = $state('');
 	let outputMode = $state<'pretty' | 'minify'>('pretty');
-	let copied = $state(false);
 	let showPreviewer = $state(false);
 
 	onMount(() => {
@@ -26,13 +25,6 @@
 			return null;
 		}
 	});
-
-	async function copyFormatted() {
-		if (!formatResult.ok || !formatResult.output) return;
-		await navigator.clipboard.writeText(formatResult.output);
-		copied = true;
-		setTimeout(() => (copied = false), 2000);
-	}
 </script>
 
 <div class="space-y-6">
@@ -44,16 +36,8 @@
 	</div>
 
 	<div class="space-y-1.5">
-		<label for="formatter-input" class="text-sm font-medium">Input</label>
-		<textarea
-			id="formatter-input"
-			bind:value={input}
-			placeholder="Paste JSON or XML here…"
-			rows="10"
-			spellcheck="false"
-			class="w-full resize-y rounded border border-surface-200-800 bg-surface-50-950 p-3 font-mono text-sm
-			       focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-500"
-		></textarea>
+		<span class="text-sm font-medium">Input</span>
+		<CodePanel bind:value={input} height="180px" />
 	</div>
 
 	<div class="flex flex-wrap items-center justify-between gap-2">
@@ -72,17 +56,6 @@
 				onclick={() => (outputMode = 'minify')}
 				class="btn btn-sm {outputMode === 'minify' ? 'preset-tonal-primary' : 'hover:preset-tonal'}"
 			>Minify</button>
-			<button
-				onclick={copyFormatted}
-				disabled={!formatResult.ok || !formatResult.output}
-				class="btn btn-sm preset-filled-primary-500 gap-1.5 transition-opacity disabled:opacity-40"
-			>
-				{#if copied}
-					<Check size={14} /> Copied!
-				{:else}
-					<Copy size={14} /> Copy
-				{/if}
-			</button>
 		</div>
 	</div>
 
@@ -95,11 +68,12 @@
 			<p class="font-mono text-sm">{formatResult.error}</p>
 		</div>
 	{:else}
-		<div
-			class="card preset-filled-surface-100-900 border border-surface-200-800 max-h-[55vh] overflow-y-auto p-4"
-		>
-			<pre class="whitespace-pre-wrap break-all font-mono text-sm">{formatResult.output}</pre>
-		</div>
+		<CodePanel
+			value={formatResult.output ?? ''}
+			language={formatResult.lang ?? 'plaintext'}
+			readonly
+			height="300px"
+		/>
 
 		{#if formatResult.lang === 'json' && parsedJson !== null}
 			<div class="space-y-2">

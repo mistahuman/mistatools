@@ -319,9 +319,6 @@
 							{/if}
 							<span class="text-sm font-medium text-error-500">{errorMessage}</span>
 						</div>
-						{#if responseText}
-							<pre class="overflow-x-auto whitespace-pre-wrap break-all text-xs">{responseText}</pre>
-						{/if}
 						{#if errorMessage.toLowerCase().includes('cors') || errorMessage.includes('Could not reach')}
 							<p class="border-l-2 border-warning-500 pl-3 text-xs text-surface-400-600">
 								If calling a local server: add <code>Access-Control-Allow-Origin: *</code> to your

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { getMonaco } from '$lib/utils/monaco';
 
 	type MonacoTheme = 'vs' | 'vs-dark' | 'hc-black';
 
@@ -27,10 +28,10 @@
 	let ignoreChange = false;
 
 	onMount(async () => {
-		const { default: loader } = await import('@monaco-editor/loader');
-		monacoInstance = await loader.init();
+		const monaco = await getMonaco();
+		monacoInstance = monaco;
 
-		editor = monacoInstance.editor.create(container, {
+		editor = monaco.editor.create(container, {
 			value,
 			language,
 			theme,
@@ -52,7 +53,6 @@
 
 	onDestroy(() => editor?.dispose());
 
-	// Sync external value changes into Monaco (guard prevents infinite loop with onDidChangeModelContent)
 	$effect(() => {
 		if (editor && editor.getValue() !== value) {
 			ignoreChange = true;
@@ -61,10 +61,15 @@
 		}
 	});
 
-	// Sync reactive props → Monaco imperative API
-	$effect(() => { if (editor) editor.updateOptions({ readOnly: readonly }); });
-	$effect(() => { if (editor && monacoInstance) monacoInstance.editor.setModelLanguage(editor.getModel(), language); });
-	$effect(() => { if (monacoInstance) monacoInstance.editor.setTheme(theme); });
+	$effect(() => {
+		if (editor) editor.updateOptions({ readOnly: readonly });
+	});
+	$effect(() => {
+		if (editor && monacoInstance) monacoInstance.editor.setModelLanguage(editor.getModel(), language);
+	});
+	$effect(() => {
+		if (monacoInstance) monacoInstance.editor.setTheme(theme);
+	});
 </script>
 
 <div bind:this={container} style:height class="w-full overflow-hidden"></div>

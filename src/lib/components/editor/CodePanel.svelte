@@ -11,6 +11,7 @@
 		readonly?: boolean;
 		height?: string;
 		theme?: MonacoTheme;
+		onchange?: (value: string) => void;
 	}
 
 	let {
@@ -19,7 +20,8 @@
 		title = '',
 		readonly = false,
 		height = '300px',
-		theme = 'vs-dark'
+		theme = 'vs-dark',
+		onchange
 	}: Props = $props();
 
 	let copied = $state(false);
@@ -83,6 +85,6 @@
 		</div>
 	</div>
 	<div class="min-h-0 flex-1" style:height={fullscreen ? undefined : height}>
-		<MonacoEditor bind:value {language} {theme} {readonly} height={fullscreen ? '100%' : height} />
+		<MonacoEditor bind:value {language} {theme} {readonly} height={fullscreen ? '100%' : height} {onchange} />
 	</div>
 </div>

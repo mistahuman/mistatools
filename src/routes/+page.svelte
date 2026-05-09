@@ -4,6 +4,11 @@
 
 	const tools = [
 		{
+			href: resolve('/tools/notes'),
+			label: 'Notes',
+			description: 'Scratch pad with syntax highlighting, saved in your browser.'
+		},
+		{
 			href: resolve('/tools/api-client'),
 			label: 'API Client',
 			description: 'Send HTTP requests and pipe responses to Formatter or Differ.'

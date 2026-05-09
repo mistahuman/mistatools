@@ -6,6 +6,7 @@
 	let { children } = $props();
 
 	const toolLinks = [
+		{ href: resolve('/tools/notes'), label: 'Notes' },
 		{ href: resolve('/tools/api-client'), label: 'API Client' },
 		{ href: resolve('/tools/formatter'), label: 'Formatter' },
 		{ href: resolve('/tools/differ'), label: 'Differ' },
